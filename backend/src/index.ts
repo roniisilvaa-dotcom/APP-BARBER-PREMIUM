@@ -41,7 +41,11 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
   res.status(500).json({ error: 'Erro interno' })
 })
 
-app.listen(PORT, () => {
-  console.log(`✅ BarberPro Premium API na porta ${PORT} | ${process.env.NODE_ENV||'development'}`)
-})
+// Inicia servidor local (ignorado em ambiente serverless Vercel)
+if (process.env.NODE_ENV !== 'production' || process.env.VERCEL !== '1') {
+  app.listen(PORT, () => {
+    console.log(`✅ BarberPro Premium API na porta ${PORT} | ${process.env.NODE_ENV||'development'}`)
+  })
+}
+
 export default app

@@ -3,7 +3,11 @@ const schema = `
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE IF NOT EXISTS usuarios (id UUID PRIMARY KEY DEFAULT uuid_generate_v4(), nome TEXT NOT NULL, email TEXT UNIQUE NOT NULL, senha_hash TEXT NOT NULL, role TEXT DEFAULT 'dono' CHECK (role IN ('dono','gerente','barbeiro','recepcionista','afiliado')), barbearia_id UUID, ativo BOOLEAN DEFAULT true, criado_em TIMESTAMPTZ DEFAULT NOW());
 CREATE TABLE IF NOT EXISTS barbearias (id UUID PRIMARY KEY DEFAULT uuid_generate_v4(), nome TEXT NOT NULL, slug TEXT UNIQUE NOT NULL, descricao TEXT, telefone TEXT, whatsapp TEXT, email TEXT, logo_url TEXT, plano TEXT DEFAULT 'starter' CHECK (plano IN ('starter','premium','franquia')), ativo BOOLEAN DEFAULT true, criado_em TIMESTAMPTZ DEFAULT NOW(), atualizado_em TIMESTAMPTZ DEFAULT NOW());
-ALTER TABLE usuarios ADD CONSTRAINT IF NOT EXISTS fk_usuario_barbearia FOREIGN KEY (barbearia_id) REFERENCES barbearias(id) ON DELETE SET NULL NOT VALID;
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_usuario_barbearia') THEN
+    ALTER TABLE usuarios ADD CONSTRAINT fk_usuario_barbearia FOREIGN KEY (barbearia_id) REFERENCES barbearias(id) ON DELETE SET NULL NOT VALID;
+  END IF;
+END $$;
 CREATE TABLE IF NOT EXISTS filiais (id UUID PRIMARY KEY DEFAULT uuid_generate_v4(), barbearia_id UUID NOT NULL REFERENCES barbearias(id) ON DELETE CASCADE, nome TEXT NOT NULL, endereco JSONB DEFAULT '{}', telefone TEXT, cidade TEXT, rating NUMERIC(3,2) DEFAULT 5.0, horario_abertura TEXT DEFAULT '09:00', horario_fechamento TEXT DEFAULT '20:00', ativa BOOLEAN DEFAULT true, criado_em TIMESTAMPTZ DEFAULT NOW());
 CREATE TABLE IF NOT EXISTS categorias_servico (id UUID PRIMARY KEY DEFAULT uuid_generate_v4(), barbearia_id UUID NOT NULL REFERENCES barbearias(id) ON DELETE CASCADE, nome TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS servicos (id UUID PRIMARY KEY DEFAULT uuid_generate_v4(), barbearia_id UUID NOT NULL REFERENCES barbearias(id) ON DELETE CASCADE, categoria_id UUID REFERENCES categorias_servico(id), nome TEXT NOT NULL, descricao TEXT, preco NUMERIC(10,2) NOT NULL, duracao_minutos INTEGER DEFAULT 30, ativo BOOLEAN DEFAULT true, criado_em TIMESTAMPTZ DEFAULT NOW());
