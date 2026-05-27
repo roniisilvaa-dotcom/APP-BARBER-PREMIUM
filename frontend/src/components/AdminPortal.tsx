@@ -205,13 +205,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onNotifyTriggered }) =
   };
 
   return (
-    <div className="flex-1 bg-[#070708] rounded-3xl border border-[#B08D57]/20 overflow-hidden flex flex-col md:flex-row shadow-2xl h-full font-sans text-white animate-fade-in" id="admin_workspace_root">
-      
+    <div className="flex-1 bg-[#070708] rounded-3xl border border-[#B08D57]/20 overflow-hidden flex flex-col md:flex-row shadow-2xl min-h-[600px] md:h-full font-sans text-white animate-fade-in" id="admin_workspace_root">
+
       {/* SIDEBAR FOR INTERNAL CONTROLS */}
-      <div className="w-full md:w-60 bg-[#0c0d0f] border-b md:border-b-0 md:border-r border-[#B08D57]/20 px-4 py-6 flex flex-col justify-between shrink-0 h-auto md:h-full">
+      <div className="w-full md:w-56 lg:w-60 bg-[#0c0d0f] border-b md:border-b-0 md:border-r border-[#B08D57]/20 px-3 md:px-4 py-4 md:py-6 flex flex-row md:flex-col justify-between shrink-0 h-auto md:h-full overflow-x-auto md:overflow-x-visible">
         <div>
-          {/* Logo and system headers */}
-          <div className="flex items-center gap-2 px-1 mb-8">
+          {/* Logo — visível apenas em desktop */}
+          <div className="hidden md:flex items-center gap-2 px-1 mb-6">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#8A6A3D] to-[#D6C29A] flex items-center justify-center text-black font-extrabold shadow-md shadow-[#B08D57]/10 shrink-0">
               BP
             </div>
@@ -223,83 +223,34 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onNotifyTriggered }) =
             </div>
           </div>
 
-          {/* Navigation Controls */}
-          <div className="flex flex-col gap-1.5">
-            <button
-              id="admin_nav_dashboard"
-              onClick={() => setActiveTab('dashboard')}
-              className={`w-full py-2.5 px-3 rounded-lg text-xs font-semibold flex items-center gap-2.5 transition-all text-left cursor-pointer ${
-                activeTab === 'dashboard' ? 'bg-[#B08D57] text-black font-extrabold' : 'text-gray-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <BarChart3 className="w-4 h-4 shrink-0" />
-              <span>Painel Executivo</span>
-            </button>
-            <button
-              id="admin_nav_agenda"
-              onClick={() => setActiveTab('agenda')}
-              className={`w-full py-2.5 px-3 rounded-lg text-xs font-semibold flex items-center gap-2.5 transition-all text-left cursor-pointer ${
-                activeTab === 'agenda' ? 'bg-[#B08D57] text-black font-extrabold' : 'text-gray-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <Calendar className="w-4 h-4 shrink-0" />
-              <span>Agenda de Poltronas</span>
-            </button>
-            <button
-              id="admin_nav_clientes"
-              onClick={() => setActiveTab('clientes')}
-              className={`w-full py-2.5 px-3 rounded-lg text-xs font-semibold flex items-center gap-2.5 transition-all text-left ${
-                activeTab === 'clientes' ? 'bg-[#B08D57] text-black font-bold' : 'text-gray-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <Users className="w-4 h-4 shrink-0" />
-              <span>Cadastro & CRM</span>
-            </button>
-            <button
-              id="admin_nav_financeiro"
-              onClick={() => setActiveTab('financeiro')}
-              className={`w-full py-2.5 px-3 rounded-lg text-xs font-semibold flex items-center gap-2.5 transition-all text-left ${
-                activeTab === 'financeiro' ? 'bg-[#B08D57] text-black font-bold' : 'text-gray-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <Coins className="w-4 h-4 shrink-0" />
-              <span>Cofre & Finanças</span>
-            </button>
-            <button
-              id="admin_nav_afiliados"
-              onClick={() => setActiveTab('afiliados')}
-              className={`w-full py-2.5 px-3 rounded-lg text-xs font-semibold flex items-center gap-2.5 transition-all text-left ${
-                activeTab === 'afiliados' ? 'bg-[#B08D57] text-black font-bold' : 'text-gray-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <Crown className="w-4 h-4 shrink-0" />
-              <span>Afiliados & Indicações</span>
-            </button>
-            <button
-              id="admin_nav_campanhas"
-              onClick={() => setActiveTab('campanhas')}
-              className={`w-full py-2.5 px-3 rounded-lg text-xs font-semibold flex items-center gap-2.5 transition-all text-left ${
-                activeTab === 'campanhas' ? 'bg-[#B08D57] text-black font-bold' : 'text-gray-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <Send className="w-4 h-4 shrink-0" />
-              <span>Disparador WhatsApp</span>
-            </button>
-            <button
-              id="admin_nav_config"
-              onClick={() => setActiveTab('config')}
-              className={`w-full py-2.5 px-3 rounded-lg text-xs font-semibold flex items-center gap-2.5 transition-all text-left ${
-                activeTab === 'config' ? 'bg-[#B08D57] text-black font-bold' : 'text-gray-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <Settings className="w-4 h-4 shrink-0" />
-              <span>Configurações SaaS</span>
-            </button>
+          {/* Navigation Controls — horizontal no mobile, vertical no desktop */}
+          <div className="flex flex-row md:flex-col gap-1 md:gap-1.5 overflow-x-auto md:overflow-x-visible pb-1 md:pb-0 w-full">
+            {[
+              { id: 'dashboard', icon: <BarChart3 className="w-4 h-4 shrink-0" />, label: 'Painel' },
+              { id: 'agenda', icon: <Calendar className="w-4 h-4 shrink-0" />, label: 'Agenda' },
+              { id: 'clientes', icon: <Users className="w-4 h-4 shrink-0" />, label: 'Clientes' },
+              { id: 'financeiro', icon: <Coins className="w-4 h-4 shrink-0" />, label: 'Finanças' },
+              { id: 'afiliados', icon: <Crown className="w-4 h-4 shrink-0" />, label: 'Afiliados' },
+              { id: 'campanhas', icon: <Send className="w-4 h-4 shrink-0" />, label: 'WhatsApp' },
+              { id: 'config', icon: <Settings className="w-4 h-4 shrink-0" />, label: 'Config' },
+            ].map(({ id, icon, label }) => (
+              <button
+                key={id}
+                id={`admin_nav_${id}`}
+                onClick={() => setActiveTab(id as typeof activeTab)}
+                className={`shrink-0 py-2 px-2.5 md:px-3 rounded-lg text-xs font-semibold flex items-center gap-1.5 md:gap-2.5 transition-all text-left cursor-pointer whitespace-nowrap ${
+                  activeTab === id ? 'bg-[#B08D57] text-black font-extrabold' : 'text-gray-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                {icon}
+                <span className="md:inline">{label}</span>
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Global indicator bar */}
-        <div className="mt-8 border-t border-gray-900 pt-5 px-1 flex flex-col gap-2">
+        {/* Global indicator bar — apenas desktop */}
+        <div className="hidden md:flex mt-8 border-t border-gray-900 pt-5 px-1 flex-col gap-2">
           <div className="flex items-center justify-between text-[10px] text-gray-500">
             <span>Servidor Central</span>
             <span className="text-emerald-400 font-mono">● ONLINE</span>
@@ -312,7 +263,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onNotifyTriggered }) =
       </div>
 
       {/* DETAILED CONTENT CONTAINER */}
-      <div className="flex-1 flex flex-col overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-850">
+      <div className="flex-1 flex flex-col overflow-y-auto px-3 py-4 md:px-6 md:py-6 scrollbar-thin scrollbar-thumb-gray-850">
         
         {/* TOP STATUS NAVIGATION AND FILTERS bar */}
         <div className="flex flex-col sm:flex-row justify-between sm:items-center border-b border-gray-900 pb-5 mb-5 gap-3">

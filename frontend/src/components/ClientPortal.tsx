@@ -197,7 +197,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ onNotifyTriggered })
   };
 
   return (
-    <div className="w-full max-w-md mx-auto aspect-[9/19] bg-[#070708] rounded-[48px] border-8 border-[#1a1b1e] shadow-2xl relative overflow-hidden flex flex-col font-sans" id="phone-container">
+    <div className="w-full max-w-sm sm:max-w-md mx-auto aspect-[9/19] max-h-[82svh] bg-[#070708] rounded-[32px] sm:rounded-[48px] border-4 sm:border-8 border-[#1a1b1e] shadow-2xl relative overflow-hidden flex flex-col font-sans" id="phone-container">
       {/* Phone Notch */}
       <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-[#1a1b1e] rounded-b-2xl z-50 flex items-center justify-center">
         <div className="w-12 h-1 bg-black rounded-full mb-1"></div>

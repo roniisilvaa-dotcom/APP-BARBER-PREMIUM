@@ -68,7 +68,7 @@ export default function App() {
     <div className="min-h-screen bg-[#070708] text-gray-200 selection:bg-[#B08D57]/30 selection:text-[#D6C29A] flex flex-col" id="app_master_root">
       
       {/* GLAMOUR BRANDING HEADER */}
-      <header className="border-b border-[#B08D57]/20 bg-[#070708]/90 backdrop-blur-md sticky top-0 z-40 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <header className="border-b border-[#B08D57]/20 bg-[#070708]/90 backdrop-blur-md sticky top-0 z-40 px-3 sm:px-6 py-3 sm:py-4 flex flex-row md:flex-row justify-between items-center gap-2 sm:gap-4">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#8A6A3D] to-[#D6C29A] p-[1.5px] shadow-lg shadow-[#B08D57]/10">
             <div className="w-full h-full bg-black rounded-[10px] flex items-center justify-center">
@@ -157,10 +157,10 @@ export default function App() {
       </header>
 
       {/* WORKSPACE SPLITTER CONTAINER */}
-      <main className="flex-1 flex flex-col xl:flex-row gap-6 p-6 overflow-hidden">
-        
-        {/* PORTLET SIDEBAR (EXPLANATIONS AND MODEL COMPONENT RULES) */}
-        <div className="w-full xl:w-[320px] shrink-0 flex flex-col gap-6" id="saas_specifications_sidebar">
+      <main className="flex-1 flex flex-col xl:flex-row gap-4 xl:gap-6 p-3 sm:p-4 md:p-6 overflow-auto xl:overflow-hidden">
+
+        {/* PORTLET SIDEBAR — oculta no mobile, visível em xl+ */}
+        <div className="hidden xl:flex xl:w-[320px] shrink-0 flex-col gap-6" id="saas_specifications_sidebar">
           
           {/* Brand Philosophy Panel */}
           <div className="glass rounded-3xl p-5 relative overflow-hidden">
