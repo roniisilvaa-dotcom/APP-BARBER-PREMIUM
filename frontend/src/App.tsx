@@ -42,7 +42,23 @@ export default function App() {
   const [showNotification, setShowNotification] = useState(false);
   const [storeState, setStoreState] = useState({ ...globalStore });
 
-  // Show auth screen when not authenticated and not in demo mode
+  // ⚠️ TODOS os hooks ANTES de qualquer early return (React Rules of Hooks)
+  useEffect(() => {
+    const unsub = globalStore.subscribe(() => {
+      setStoreState({ ...globalStore });
+
+      const lastMsg = globalStore.whatsappMessages[0];
+      if (lastMsg) {
+        setLatestNotification(`WhatsApp para ${lastMsg.customerName}: ${lastMsg.content}`);
+        setShowNotification(true);
+        const timer = setTimeout(() => setShowNotification(false), 8000);
+        return () => clearTimeout(timer);
+      }
+    });
+    return unsub;
+  }, []);
+
+  // Early returns APÓS todos os hooks
   if (loading) {
     return (
       <div className="min-h-screen bg-[#070708] flex items-center justify-center">
@@ -54,26 +70,6 @@ export default function App() {
   if (!isAuthenticated && !isDemoMode) {
     return <AuthScreen />;
   }
-
-  // Sync state changes from central store
-  useEffect(() => {
-    const unsub = globalStore.subscribe(() => {
-      setStoreState({ ...globalStore });
-      
-      // Look if there are any new WhatsApp messages to bubble up as simulation
-      const lastMsg = globalStore.whatsappMessages[0];
-      if (lastMsg) {
-        setLatestNotification(`WhatsApp para ${lastMsg.customerName}: ${lastMsg.content}`);
-        setShowNotification(true);
-        
-        const timer = setTimeout(() => {
-          setShowNotification(false);
-        }, 8000);
-        return () => clearTimeout(timer);
-      }
-    });
-    return unsub;
-  }, []);
 
   const triggerManualNotification = (message: string) => {
     setLatestNotification(message);
