@@ -5,35 +5,53 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Crown, 
-  Smartphone, 
-  Monitor, 
-  UserCheck, 
-  Trophy, 
-  Scissors, 
-  Sparkles, 
-  Check, 
-  MessageSquare, 
-  Bell, 
-  Compass, 
-  Volume2, 
+import {
+  Crown,
+  Smartphone,
+  Monitor,
+  UserCheck,
+  Trophy,
+  Scissors,
+  Sparkles,
+  Check,
+  MessageSquare,
+  Bell,
+  Compass,
+  Volume2,
   HelpCircle,
   Database,
   ArrowRight,
-  ShieldAlert
+  ShieldAlert,
+  LogOut,
+  User
 } from 'lucide-react';
 import { globalStore } from './data/store';
 import { ClientPortal } from './components/ClientPortal';
 import { AdminPortal } from './components/AdminPortal';
 import { BarberPortal } from './components/BarberPortal';
 import { AffiliatePortal } from './components/AffiliatePortal';
+import { AuthScreen } from './components/AuthScreen';
+import { useAuth } from './context/AuthContext';
 
 export default function App() {
+  const { isAuthenticated, isDemoMode, loading, user, logout } = useAuth();
   const [activeRole, setActiveRole] = useState<'client' | 'admin' | 'barber' | 'affiliate'>('client');
   const [latestNotification, setLatestNotification] = useState<string | null>(null);
   const [showNotification, setShowNotification] = useState(false);
   const [storeState, setStoreState] = useState({ ...globalStore });
+
+  // Show auth screen when not authenticated and not in demo mode
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#070708] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[#B08D57]/30 border-t-[#B08D57] rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated && !isDemoMode) {
+    return <AuthScreen />;
+  }
 
   // Sync state changes from central store
   useEffect(() => {
@@ -86,6 +104,27 @@ export default function App() {
             </div>
             <p className="text-[10px] text-gray-400 uppercase tracking-widest mt-0.5">SaaS de Gestão e Reservas Online sem Colisão de Poltronas</p>
           </div>
+        </div>
+
+        {/* AUTH STATUS + LOGOUT */}
+        <div className="hidden sm:flex items-center gap-2 mr-2 shrink-0">
+          {isDemoMode ? (
+            <span className="text-[9px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-1 rounded-full uppercase tracking-widest font-bold flex items-center gap-1">
+              <Sparkles className="w-3 h-3" /> Demo
+            </span>
+          ) : user ? (
+            <span className="text-[10px] text-gray-400 flex items-center gap-1.5">
+              <User className="w-3 h-3 text-[#B08D57]" />
+              <span className="hidden lg:inline text-gray-300">{user.nome}</span>
+            </span>
+          ) : null}
+          <button
+            onClick={logout}
+            title="Sair"
+            className="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-400/10 transition-all"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+          </button>
         </div>
 
         {/* WORKSPACE ACTOR SWITCHER BUTTONS */}
