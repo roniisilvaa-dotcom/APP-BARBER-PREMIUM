@@ -237,10 +237,21 @@ export interface BarbeariaDB {
   ativo: boolean
 }
 
+export interface DashboardDB {
+  agendamentos: { hoje: string; pendentes: string; concluidos_mes: string }
+  financeiro: { receita_mes: string; despesa_mes: string }
+  clientes: { total: string }
+  barbeiros: { total: string }
+}
+
 export const barbeariasApi = {
-  get: (id: string) => request<BarbeariaDB>(`/api/barbearias/${id}`),
-  update: (id: string, data: Partial<BarbeariaDB>) =>
-    request<BarbeariaDB>(`/api/barbearias/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  me: () => request<BarbeariaDB>('/api/barbearias/me'),
+  update: (data: Partial<BarbeariaDB>) =>
+    request<BarbeariaDB>('/api/barbearias/me', { method: 'PATCH', body: JSON.stringify(data) }),
+  dashboard: () => request<DashboardDB>('/api/barbearias/dashboard'),
+  filiais: () => request<{ id: string; nome: string; cidade: string; ativa: boolean }[]>('/api/barbearias/filiais'),
+  criarFilial: (data: { nome: string; telefone?: string; cidade?: string }) =>
+    request('/api/barbearias/filiais', { method: 'POST', body: JSON.stringify(data) }),
 }
 
 // ─── Token Helpers ────────────────────────────────────────────────────────────

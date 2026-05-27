@@ -32,9 +32,11 @@ import { BarberPortal } from './components/BarberPortal';
 import { AffiliatePortal } from './components/AffiliatePortal';
 import { AuthScreen } from './components/AuthScreen';
 import { useAuth } from './context/AuthContext';
+import { useApiSync } from './hooks/useApiSync';
 
 export default function App() {
   const { isAuthenticated, isDemoMode, loading, user, logout } = useAuth();
+  const { barbearia, synced } = useApiSync();
   const [activeRole, setActiveRole] = useState<'client' | 'admin' | 'barber' | 'affiliate'>('client');
   const [latestNotification, setLatestNotification] = useState<string | null>(null);
   const [showNotification, setShowNotification] = useState(false);
@@ -96,7 +98,7 @@ export default function App() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-base font-serif font-semibold tracking-[0.15em] text-white uppercase">
-                <span className="gold-text">BarberPro</span> <span className="text-[#B08D57] font-bold">Premium</span>
+                <span className="gold-text">{barbearia?.nome || 'BarberPro'}</span> {!barbearia && <span className="text-[#B08D57] font-bold">Premium</span>}
               </h1>
               <span className="text-[9px] bg-[#B08D57]/10 text-[#D6C29A] border border-[#B08D57]/20 px-2 py-0.2 rounded-full uppercase tracking-widest font-bold font-mono">
                 Elite Franquia v1.2

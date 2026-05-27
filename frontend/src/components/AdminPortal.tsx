@@ -4,43 +4,170 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { 
-  BarChart3, 
-  Calendar, 
-  Users, 
-  Settings, 
-  Smartphone, 
-  Crown, 
-  Coins, 
-  Building, 
-  Plus, 
-  Filter, 
-  AlertCircle, 
-  Send, 
-  Sparkles, 
-  ArrowUpRight, 
-  Trash2, 
+import {
+  BarChart3,
+  Calendar,
+  Users,
+  Settings,
+  Smartphone,
+  Crown,
+  Coins,
+  Building,
+  Plus,
+  Filter,
+  AlertCircle,
+  Send,
+  Sparkles,
+  ArrowUpRight,
+  Trash2,
   Hand,
   CheckCircle,
   X,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Loader2,
+  Scissors,
+  UserPlus,
+  RefreshCw
 } from 'lucide-react';
 import { globalStore } from '../data/store';
-import { 
-  RevenueAreaChart, 
-  CircularOccupancyGauge, 
-  BranchBarChart 
+import {
+  RevenueAreaChart,
+  CircularOccupancyGauge,
+  BranchBarChart
 } from './DashboardCharts';
 import { Appointment, Branch, Service, Barber } from '../types';
+import { useAuth } from '../context/AuthContext';
+import { barbeirosApi, clientesApi, servicosApi, barbeariasApi, agendamentosApi, type DashboardDB } from '../services/api';
 
 interface AdminPortalProps {
   onNotifyTriggered: (msg: string) => void;
 }
 
 export const AdminPortal: React.FC<AdminPortalProps> = ({ onNotifyTriggered }) => {
+  const { isAuthenticated, isDemoMode } = useAuth();
   const [storeState, setStoreState] = useState({ ...globalStore });
-  const [selectedBranchId, setSelectedBranchId] = useState<string>('all'); // all, br_jardins, br_leblon, br_savassi
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'agenda' | 'clientes' | 'financeiro' | 'afiliados' | 'campanhas' | 'config'>('dashboard');
+  const [selectedBranchId, setSelectedBranchId] = useState<string>('all');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'agenda' | 'clientes' | 'financeiro' | 'afiliados' | 'campanhas' | 'config' | 'cadastros'>('dashboard');
+
+  // ─── Real API data ─────────────────────────────────────────────
+  const [apiDashboard, setApiDashboard] = useState<DashboardDB | null>(null);
+  const [apiLoading, setApiLoading] = useState(false);
+
+  // Modal para cadastro de barbeiro
+  const [showAddBarber, setShowAddBarber] = useState(false);
+  const [newBarberNome, setNewBarberNome] = useState('');
+  const [newBarberTelefone, setNewBarberTelefone] = useState('');
+  const [newBarberBio, setNewBarberBio] = useState('');
+  const [newBarberComissao, setNewBarberComissao] = useState('40');
+  const [savingBarber, setSavingBarber] = useState(false);
+
+  // Modal para cadastro de serviço
+  const [showAddServico, setShowAddServico] = useState(false);
+  const [newServicoNome, setNewServicoNome] = useState('');
+  const [newServicoPreco, setNewServicoPreco] = useState('');
+  const [newServicoDuracao, setNewServicoDuracao] = useState('30');
+  const [newServicoDescricao, setNewServicoDescricao] = useState('');
+  const [savingServico, setSavingServico] = useState(false);
+
+  // Modal para cadastro de cliente
+  const [showAddCliente, setShowAddCliente] = useState(false);
+  const [newClienteNome, setNewClienteNome] = useState('');
+  const [newClienteTelefone, setNewClienteTelefone] = useState('');
+  const [newClienteEmail, setNewClienteEmail] = useState('');
+  const [savingCliente, setSavingCliente] = useState(false);
+
+  // Carregar dashboard real quando autenticado
+  useEffect(() => {
+    if (!isAuthenticated || isDemoMode) return;
+    setApiLoading(true);
+    barbeariasApi.dashboard()
+      .then(d => setApiDashboard(d))
+      .catch(() => {})
+      .finally(() => setApiLoading(false));
+  }, [isAuthenticated, isDemoMode]);
+
+  const reloadApiData = async () => {
+    if (!isAuthenticated || isDemoMode) return;
+    setApiLoading(true);
+    try {
+      const [dash, barbeiros, clientes] = await Promise.all([
+        barbeariasApi.dashboard(),
+        barbeirosApi.list(),
+        clientesApi.list(),
+      ]);
+      setApiDashboard(dash);
+      // Sync to store
+      if (barbeiros.length > 0) {
+        globalStore.barbers = barbeiros.map((b: { id: string; nome: string; rating: number; foto_url: string | null; especialidades: string[]; bio: string | null; comissao_percentual: number }) => ({
+          id: b.id, name: b.nome, role: 'Barbeiro', rating: b.rating, reviewsCount: 0,
+          imageUrl: b.foto_url || `https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(b.nome)}&backgroundColor=8A6A3D`,
+          branchIds: globalStore.branches.map((br: Branch) => br.id),
+          specialties: b.especialidades || [], bio: b.bio || '',
+          commissionPercentage: (b.comissao_percentual || 40) / 100
+        }));
+      }
+      if (clientes.length > 0) {
+        globalStore.customers = clientes.map((c: { id: string; nome: string; telefone: string; email: string | null; pontos_fidelidade: number; total_gasto: number; criado_em: string }) => ({
+          id: c.id, name: c.nome, phone: c.telefone, email: c.email || '',
+          vip: (c.pontos_fidelidade || 0) > 100, status: 'Nenhum',
+          joined: c.criado_em?.split('T')[0] || '2026-01-01',
+          totalSpent: Number(c.total_gasto) || 0, loyaltyPoints: c.pontos_fidelidade || 0
+        }));
+      }
+      setStoreState({ ...globalStore });
+    } catch {}
+    setApiLoading(false);
+  };
+
+  const handleSaveBarber = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newBarberNome) return;
+    setSavingBarber(true);
+    try {
+      const b = await barbeirosApi.create({ nome: newBarberNome, telefone: newBarberTelefone || undefined, bio: newBarberBio || undefined, comissao_percentual: Number(newBarberComissao) });
+      globalStore.barbers.push({
+        id: b.id, name: b.nome, role: 'Barbeiro', rating: 5, reviewsCount: 0,
+        imageUrl: `https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(b.nome)}&backgroundColor=8A6A3D`,
+        branchIds: globalStore.branches.map((br: Branch) => br.id),
+        specialties: [], bio: b.bio || '', commissionPercentage: (b.comissao_percentual || 40) / 100
+      });
+      setStoreState({ ...globalStore });
+      setShowAddBarber(false);
+      setNewBarberNome(''); setNewBarberTelefone(''); setNewBarberBio(''); setNewBarberComissao('40');
+      onNotifyTriggered(`Barbeiro ${b.nome} cadastrado com sucesso na barbearia!`);
+    } catch (err: unknown) { alert((err as Error).message); }
+    setSavingBarber(false);
+  };
+
+  const handleSaveServico = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newServicoNome || !newServicoPreco) return;
+    setSavingServico(true);
+    try {
+      const s = await servicosApi.create({ nome: newServicoNome, preco: Number(newServicoPreco), duracao_minutos: Number(newServicoDuracao), descricao: newServicoDescricao || undefined });
+      globalStore.services.push({ id: s.id, name: s.nome, categoryId: 'cat_hair', price: Number(s.preco), durationMinutes: s.duracao_minutos, description: s.descricao || '' });
+      setStoreState({ ...globalStore });
+      setShowAddServico(false);
+      setNewServicoNome(''); setNewServicoPreco(''); setNewServicoDuracao('30'); setNewServicoDescricao('');
+      onNotifyTriggered(`Serviço "${s.nome}" adicionado ao cardápio da barbearia!`);
+    } catch (err: unknown) { alert((err as Error).message); }
+    setSavingServico(false);
+  };
+
+  const handleSaveCliente = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newClienteNome || !newClienteTelefone) return;
+    setSavingCliente(true);
+    try {
+      const c = await clientesApi.create({ nome: newClienteNome, telefone: newClienteTelefone, email: newClienteEmail || undefined });
+      globalStore.customers.push({ id: c.id, name: c.nome, phone: c.telefone, email: c.email || '', vip: false, status: 'Nenhum', joined: new Date().toISOString().split('T')[0], totalSpent: 0, loyaltyPoints: 0 });
+      setStoreState({ ...globalStore });
+      setShowAddCliente(false);
+      setNewClienteNome(''); setNewClienteTelefone(''); setNewClienteEmail('');
+      onNotifyTriggered(`Cliente ${c.nome} cadastrado no CRM com sucesso!`);
+    } catch (err: unknown) { alert((err as Error).message); }
+    setSavingCliente(false);
+  };
 
   // Manual Encaixe states
   const [showEncaixeModal, setShowEncaixeModal] = useState(false);
@@ -230,6 +357,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onNotifyTriggered }) =
               { id: 'agenda', icon: <Calendar className="w-4 h-4 shrink-0" />, label: 'Agenda' },
               { id: 'clientes', icon: <Users className="w-4 h-4 shrink-0" />, label: 'Clientes' },
               { id: 'financeiro', icon: <Coins className="w-4 h-4 shrink-0" />, label: 'Finanças' },
+              { id: 'cadastros', icon: <Plus className="w-4 h-4 shrink-0" />, label: 'Cadastros' },
               { id: 'afiliados', icon: <Crown className="w-4 h-4 shrink-0" />, label: 'Afiliados' },
               { id: 'campanhas', icon: <Send className="w-4 h-4 shrink-0" />, label: 'WhatsApp' },
               { id: 'config', icon: <Settings className="w-4 h-4 shrink-0" />, label: 'Config' },
@@ -276,6 +404,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onNotifyTriggered }) =
               {activeTab === 'afiliados' && 'Painel de Afiliados de Ticket Alto'}
               {activeTab === 'campanhas' && 'Simulador de Disparos em Massa'}
               {activeTab === 'config' && 'Parâmetros Globais do Sistema'}
+              {activeTab === 'cadastros' && 'Cadastros — Barbeiros, Serviços e Clientes'}
             </h1>
             <p className="text-xs text-gray-400 mt-0.5">Visão consolidada do crescimento de suas franquias premium</p>
           </div>
@@ -316,6 +445,37 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onNotifyTriggered }) =
         {/* TAB 1: EXECUTIVE DASHBOARD */}
         {activeTab === 'dashboard' && (
           <div className="flex flex-col gap-6" id="dashboard_tab_content">
+
+            {/* Métricas REAIS do backend (quando autenticado) */}
+            {apiDashboard && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="bg-emerald-500/8 border border-emerald-500/20 rounded-2xl p-4 flex flex-col gap-1">
+                  <span className="text-[9px] uppercase tracking-wider text-emerald-400/70 font-bold font-mono">Receita do Mês</span>
+                  <span className="text-lg font-bold text-emerald-300">R$ {Number(apiDashboard.financeiro.receita_mes || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                  <span className="text-[9px] text-emerald-500/60 font-mono">★ Dados reais do banco</span>
+                </div>
+                <div className="bg-[#B08D57]/8 border border-[#B08D57]/20 rounded-2xl p-4 flex flex-col gap-1">
+                  <span className="text-[9px] uppercase tracking-wider text-[#B08D57]/70 font-bold font-mono">Agend. Hoje</span>
+                  <span className="text-lg font-bold text-[#D6C29A]">{apiDashboard.agendamentos.hoje || 0}</span>
+                  <span className="text-[9px] text-[#B08D57]/50 font-mono">{apiDashboard.agendamentos.pendentes || 0} pendentes</span>
+                </div>
+                <div className="bg-sky-500/8 border border-sky-500/20 rounded-2xl p-4 flex flex-col gap-1">
+                  <span className="text-[9px] uppercase tracking-wider text-sky-400/70 font-bold font-mono">Clientes</span>
+                  <span className="text-lg font-bold text-sky-300">{apiDashboard.clientes.total || 0}</span>
+                  <span className="text-[9px] text-sky-500/60 font-mono">cadastrados</span>
+                </div>
+                <div className="bg-purple-500/8 border border-purple-500/20 rounded-2xl p-4 flex flex-col gap-1">
+                  <span className="text-[9px] uppercase tracking-wider text-purple-400/70 font-bold font-mono">Barbeiros</span>
+                  <span className="text-lg font-bold text-purple-300">{apiDashboard.barbeiros.total || 0}</span>
+                  <span className="text-[9px] text-purple-500/60 font-mono">
+                    <button onClick={reloadApiData} className="flex items-center gap-1 hover:text-purple-300 transition-colors">
+                      {apiLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />} atualizar
+                    </button>
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Quick Metrics Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="glass rounded-2xl p-4.5 flex flex-col justify-between bg-[#111214]">
@@ -966,6 +1126,166 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onNotifyTriggered }) =
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* TAB CADASTROS — Barbeiros, Serviços, Clientes reais */}
+        {activeTab === 'cadastros' && (
+          <div className="flex flex-col gap-6">
+
+            {/* ─── Barbeiros ─────────────────────────────── */}
+            <div className="bg-[#111214] border border-gray-900 rounded-2xl p-5">
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#D6C29A] flex items-center gap-2"><Scissors className="w-3.5 h-3.5"/>Barbeiros</h4>
+                  <p className="text-[10px] text-gray-400 mt-0.5">{storeState.barbers.length} profissionais cadastrados</p>
+                </div>
+                <button onClick={() => setShowAddBarber(true)} className="flex items-center gap-1.5 bg-[#B08D57] text-black text-[10px] font-bold px-3 py-1.5 rounded-xl hover:bg-[#C4A55A] transition-colors">
+                  <Plus className="w-3 h-3" /> Novo Barbeiro
+                </button>
+              </div>
+              <div className="flex flex-col gap-2">
+                {storeState.barbers.map(b => (
+                  <div key={b.id} className="flex items-center justify-between bg-black/30 border border-gray-900 rounded-xl px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <img src={b.imageUrl} alt={b.name} className="w-8 h-8 rounded-full object-cover bg-gray-800"/>
+                      <div>
+                        <span className="text-xs font-semibold text-white block">{b.name}</span>
+                        <span className="text-[10px] text-gray-400">{(b.commissionPercentage * 100).toFixed(0)}% comissão • ⭐ {b.rating}</span>
+                      </div>
+                    </div>
+                    <span className="text-[9px] text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full font-mono">Ativo</span>
+                  </div>
+                ))}
+                {storeState.barbers.length === 0 && (
+                  <p className="text-center text-gray-500 text-xs py-6">Nenhum barbeiro cadastrado ainda. Adicione o primeiro!</p>
+                )}
+              </div>
+            </div>
+
+            {/* ─── Serviços ─────────────────────────────── */}
+            <div className="bg-[#111214] border border-gray-900 rounded-2xl p-5">
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#D6C29A] flex items-center gap-2"><Sparkles className="w-3.5 h-3.5"/>Serviços / Cardápio</h4>
+                  <p className="text-[10px] text-gray-400 mt-0.5">{storeState.services.length} serviços no cardápio</p>
+                </div>
+                <button onClick={() => setShowAddServico(true)} className="flex items-center gap-1.5 bg-[#B08D57] text-black text-[10px] font-bold px-3 py-1.5 rounded-xl hover:bg-[#C4A55A] transition-colors">
+                  <Plus className="w-3 h-3" /> Novo Serviço
+                </button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {storeState.services.map(s => (
+                  <div key={s.id} className="flex items-center justify-between bg-black/30 border border-gray-900 rounded-xl px-4 py-3">
+                    <div>
+                      <span className="text-xs font-semibold text-white block">{s.name}</span>
+                      <span className="text-[10px] text-gray-400">{s.durationMinutes} min</span>
+                    </div>
+                    <span className="text-[#D6C29A] font-mono font-bold text-xs">R$ {Number(s.price).toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ─── Clientes ─────────────────────────────── */}
+            <div className="bg-[#111214] border border-gray-900 rounded-2xl p-5">
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#D6C29A] flex items-center gap-2"><UserPlus className="w-3.5 h-3.5"/>Clientes (CRM)</h4>
+                  <p className="text-[10px] text-gray-400 mt-0.5">{storeState.customers.length} clientes na base</p>
+                </div>
+                <button onClick={() => setShowAddCliente(true)} className="flex items-center gap-1.5 bg-[#B08D57] text-black text-[10px] font-bold px-3 py-1.5 rounded-xl hover:bg-[#C4A55A] transition-colors">
+                  <Plus className="w-3 h-3" /> Novo Cliente
+                </button>
+              </div>
+              <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
+                {storeState.customers.slice(0,20).map((c: { id: string; name: string; phone: string; vip: boolean; totalSpent: number; loyaltyPoints: number }) => (
+                  <div key={c.id} className="flex items-center justify-between bg-black/30 border border-gray-900 rounded-xl px-4 py-2.5">
+                    <div>
+                      <span className="text-xs font-semibold text-white flex items-center gap-1.5">
+                        {c.name} {c.vip && <Crown className="w-3 h-3 text-[#B08D57]"/>}
+                      </span>
+                      <span className="text-[10px] text-gray-400">{c.phone}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] text-[#D6C29A] block font-mono">R$ {Number(c.totalSpent).toFixed(2)}</span>
+                      <span className="text-[9px] text-gray-500">{c.loyaltyPoints} pts</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ─── Modal Novo Barbeiro ────────────────────── */}
+            {showAddBarber && (
+              <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                <div className="bg-[#0e0f10] border border-[#B08D57]/20 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+                  <div className="flex justify-between items-center mb-5">
+                    <h3 className="text-sm font-bold text-[#D6C29A] uppercase tracking-wide">Cadastrar Barbeiro</h3>
+                    <button onClick={() => setShowAddBarber(false)} className="text-gray-500 hover:text-white"><X className="w-4 h-4"/></button>
+                  </div>
+                  <form onSubmit={handleSaveBarber} className="flex flex-col gap-3">
+                    <input required placeholder="Nome do barbeiro *" value={newBarberNome} onChange={e => setNewBarberNome(e.target.value)} className="w-full bg-[#141516] border border-[#B08D57]/15 rounded-xl px-4 py-3 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-[#B08D57]/40"/>
+                    <input placeholder="Telefone" value={newBarberTelefone} onChange={e => setNewBarberTelefone(e.target.value)} className="w-full bg-[#141516] border border-[#B08D57]/15 rounded-xl px-4 py-3 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-[#B08D57]/40"/>
+                    <input placeholder="Bio / apresentação" value={newBarberBio} onChange={e => setNewBarberBio(e.target.value)} className="w-full bg-[#141516] border border-[#B08D57]/15 rounded-xl px-4 py-3 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-[#B08D57]/40"/>
+                    <div className="flex items-center gap-2">
+                      <label className="text-xs text-gray-400 whitespace-nowrap">Comissão %:</label>
+                      <input type="number" min="0" max="100" placeholder="40" value={newBarberComissao} onChange={e => setNewBarberComissao(e.target.value)} className="w-full bg-[#141516] border border-[#B08D57]/15 rounded-xl px-4 py-3 text-sm text-gray-200 focus:outline-none focus:border-[#B08D57]/40"/>
+                    </div>
+                    <button type="submit" disabled={savingBarber} className="w-full py-3 rounded-xl bg-gradient-to-r from-[#8A6A3D] to-[#B08D57] text-white font-bold text-sm flex items-center justify-center gap-2 mt-2">
+                      {savingBarber ? <Loader2 className="w-4 h-4 animate-spin"/> : <><CheckCircle className="w-4 h-4"/>Salvar Barbeiro</>}
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* ─── Modal Novo Serviço ─────────────────────── */}
+            {showAddServico && (
+              <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                <div className="bg-[#0e0f10] border border-[#B08D57]/20 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+                  <div className="flex justify-between items-center mb-5">
+                    <h3 className="text-sm font-bold text-[#D6C29A] uppercase tracking-wide">Adicionar Serviço</h3>
+                    <button onClick={() => setShowAddServico(false)} className="text-gray-500 hover:text-white"><X className="w-4 h-4"/></button>
+                  </div>
+                  <form onSubmit={handleSaveServico} className="flex flex-col gap-3">
+                    <input required placeholder="Nome do serviço *" value={newServicoNome} onChange={e => setNewServicoNome(e.target.value)} className="w-full bg-[#141516] border border-[#B08D57]/15 rounded-xl px-4 py-3 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-[#B08D57]/40"/>
+                    <input required type="number" step="0.01" placeholder="Preço (R$) *" value={newServicoPreco} onChange={e => setNewServicoPreco(e.target.value)} className="w-full bg-[#141516] border border-[#B08D57]/15 rounded-xl px-4 py-3 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-[#B08D57]/40"/>
+                    <select value={newServicoDuracao} onChange={e => setNewServicoDuracao(e.target.value)} className="w-full bg-[#141516] border border-[#B08D57]/15 rounded-xl px-4 py-3 text-sm text-gray-200 focus:outline-none focus:border-[#B08D57]/40">
+                      <option value="30">30 minutos</option>
+                      <option value="45">45 minutos</option>
+                      <option value="60">60 minutos</option>
+                      <option value="90">90 minutos</option>
+                    </select>
+                    <input placeholder="Descrição (opcional)" value={newServicoDescricao} onChange={e => setNewServicoDescricao(e.target.value)} className="w-full bg-[#141516] border border-[#B08D57]/15 rounded-xl px-4 py-3 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-[#B08D57]/40"/>
+                    <button type="submit" disabled={savingServico} className="w-full py-3 rounded-xl bg-gradient-to-r from-[#8A6A3D] to-[#B08D57] text-white font-bold text-sm flex items-center justify-center gap-2 mt-2">
+                      {savingServico ? <Loader2 className="w-4 h-4 animate-spin"/> : <><CheckCircle className="w-4 h-4"/>Salvar Serviço</>}
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* ─── Modal Novo Cliente ─────────────────────── */}
+            {showAddCliente && (
+              <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                <div className="bg-[#0e0f10] border border-[#B08D57]/20 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+                  <div className="flex justify-between items-center mb-5">
+                    <h3 className="text-sm font-bold text-[#D6C29A] uppercase tracking-wide">Cadastrar Cliente</h3>
+                    <button onClick={() => setShowAddCliente(false)} className="text-gray-500 hover:text-white"><X className="w-4 h-4"/></button>
+                  </div>
+                  <form onSubmit={handleSaveCliente} className="flex flex-col gap-3">
+                    <input required placeholder="Nome completo *" value={newClienteNome} onChange={e => setNewClienteNome(e.target.value)} className="w-full bg-[#141516] border border-[#B08D57]/15 rounded-xl px-4 py-3 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-[#B08D57]/40"/>
+                    <input required placeholder="Telefone / WhatsApp *" value={newClienteTelefone} onChange={e => setNewClienteTelefone(e.target.value)} className="w-full bg-[#141516] border border-[#B08D57]/15 rounded-xl px-4 py-3 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-[#B08D57]/40"/>
+                    <input type="email" placeholder="E-mail (opcional)" value={newClienteEmail} onChange={e => setNewClienteEmail(e.target.value)} className="w-full bg-[#141516] border border-[#B08D57]/15 rounded-xl px-4 py-3 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-[#B08D57]/40"/>
+                    <button type="submit" disabled={savingCliente} className="w-full py-3 rounded-xl bg-gradient-to-r from-[#8A6A3D] to-[#B08D57] text-white font-bold text-sm flex items-center justify-center gap-2 mt-2">
+                      {savingCliente ? <Loader2 className="w-4 h-4 animate-spin"/> : <><CheckCircle className="w-4 h-4"/>Salvar Cliente</>}
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
+
           </div>
         )}
 
