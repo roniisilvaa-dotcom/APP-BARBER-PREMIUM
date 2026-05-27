@@ -1,0 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Playfair Display', serif;
+  --font-serif: 'Playfair Display', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  
+  --color-gold-deep: #8A6A3D;
+  --color-gold-base: #B08D57;
+  --color-gold-light: #D6C29A;
+  --color-gold-champagne: #D6C29A;
+  --color-bronze: #6F532F;
+}
+
+body {
+  background-color: #070708;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+/* Professional Polish Custom Core Styles */
+.serif {
+  font-family: 'Playfair Display', serif;
+}
+
+.glass {
+  background: rgba(17, 18, 20, 0.8);
+  border: 1px solid rgba(176, 141, 87, 0.2);
+  backdrop-filter: blur(8px);
+}
+
+.sidebar-item:hover {
+  background: linear-gradient(90deg, rgba(176, 141, 87, 0.1) 0%, transparent 100%);
+  border-left: 3px solid #B08D57;
+}
+
+.gold-text {
+  background: linear-gradient(135deg, #D6C29A 0%, #B08D57 50%, #8A6A3D 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.btn-premium {
+  background: linear-gradient(135deg, #B08D57 0%, #6F532F 100%);
+  box-shadow: 0 4px 15px rgba(111, 83, 47, 0.3);
+  color: #000000;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-premium:hover {
+  opacity: 0.95;
+  transform: translateY(-1px);
+}
+
+.btn-premium:active {
+  transform: translateY(0);
+}
+
+.appointment-card {
+  background: rgba(176, 141, 87, 0.15);
+  border-left: 3px solid #B08D57;
+  backdrop-filter: blur(4px);
+}
+
+/* Custom scrollbar configurations */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: #070708;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #25262b;
+  border-radius: 999px;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+

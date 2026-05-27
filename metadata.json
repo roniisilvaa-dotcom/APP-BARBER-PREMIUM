@@ -1,0 +1,6 @@
+{
+  "name": "BarberPro Premium",
+  "description": "Plataforma SaaS ultra-premium de gestão e agendamento para barbearias de alto padrão, clubes VIP e operações de luxo.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
