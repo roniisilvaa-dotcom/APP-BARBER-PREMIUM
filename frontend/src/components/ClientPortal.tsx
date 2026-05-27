@@ -192,7 +192,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ onNotifyTriggered })
     setSubscribingCustName('');
     setAffiliateCode('');
 
-    onNotifyTriggered(`Assinatura do ${sub.pricePaid === 490 ? 'Club Black' : sub.pricePaid === 290 ? 'Club Gold' : 'Club Bronze'} com sucesso!`);
+    onNotifyTriggered(`Assinatura do ${sub.planId === 'plan_black' ? 'Club Black' : sub.planId === 'plan_gold' ? 'Club Gold' : 'Club Bronze'} com sucesso!`);
     setCurrentScreen('profile');
   };
 

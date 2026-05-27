@@ -165,7 +165,7 @@ export const INITIAL_SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
   {
     id: 'plan_bronze',
     name: 'Club Bronze',
-    price: 190.00,
+    price: 79.90,
     cutsPerMonth: 2,
     barbasPerMonth: 0,
     priorityBooking: true,
@@ -175,30 +175,30 @@ export const INITIAL_SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
       '2 Cortes Signature por mês',
       'Agendamento online priorizado',
       '10% de desconto em cosméticos BarberPro',
-      'Serviço de café espresso premium incluído'
+      'Café espresso premium incluído em cada visita'
     ]
   },
   {
     id: 'plan_gold',
     name: 'Club Gold',
-    price: 290.00,
+    price: 129.90,
     cutsPerMonth: 3,
     barbasPerMonth: 2,
     priorityBooking: true,
     productDiscountPercentage: 15,
-    description: 'Nosso clube mais popular. Oferece visual completo quinzenal e barba alinhada.',
+    description: 'Nosso clube mais popular. Visual completo quinzenal e barba alinhada.',
     benefits: [
       '3 Cortes Signature por mês',
       '2 Barbas Imperiais por mês',
       'Agendamento prioritário com barbeiro favorito',
       '15% de desconto em cosméticos BarberPro',
-      'Complementar: Chopp Premium ou Água de Coco em cada visita'
+      'Chopp Premium ou Água de Coco em cada visita'
     ]
   },
   {
     id: 'plan_black',
     name: 'Club Black',
-    price: 490.00,
+    price: 199.90,
     cutsPerMonth: 99, // Unlimited model
     barbasPerMonth: 99, // Unlimited model
     priorityBooking: true,
@@ -210,8 +210,8 @@ export const INITIAL_SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
       'Acesso livre ao SPA Capilar mensalmente',
       'Reservas de emergência garantidas (Encaixes)',
       '25% de desconto em cosméticos e presentes BarberPro',
-      'Open Bar Premium: Whisky Single Malt, Chopp Artesanal e Café Espresso em todas as visitas',
-      'Estacionamento valet gratuito na unidade Jardins'
+      'Open Bar Premium: Whisky Single Malt, Chopp Artesanal e Café Espresso',
+      'Estacionamento valet gratuito'
     ]
   }
 ];
@@ -329,7 +329,7 @@ export const INITIAL_SUBSCRIPTIONS: Subscription[] = [
     nextBillingDate: '2026-06-15',
     cutsUsedThisMonth: 4,
     barbasUsedThisMonth: 3,
-    pricePaid: 490.00
+    pricePaid: 199.90
   },
   {
     id: 'sub_2',
@@ -342,7 +342,7 @@ export const INITIAL_SUBSCRIPTIONS: Subscription[] = [
     nextBillingDate: '2026-06-10',
     cutsUsedThisMonth: 1,
     barbasUsedThisMonth: 1,
-    pricePaid: 290.00
+    pricePaid: 129.90
   },
   {
     id: 'sub_3',
@@ -355,7 +355,7 @@ export const INITIAL_SUBSCRIPTIONS: Subscription[] = [
     nextBillingDate: '2026-06-05',
     cutsUsedThisMonth: 2,
     barbasUsedThisMonth: 0,
-    pricePaid: 190.00
+    pricePaid: 79.90
   }
 ];
 
@@ -365,9 +365,9 @@ export const INITIAL_FINANCIALS: FinancialTransaction[] = [
   { id: 'tx_2', type: 'income', category: 'service', amount: 110.00, date: '2026-05-26', description: 'Atendimento: Felipe Diniz', branchId: 'br_jardins', paymentMethod: 'pix', referenceId: 'apt_2' },
   
   // Income from Subscriptions
-  { id: 'tx_3', type: 'income', category: 'subscription', amount: 490.00, date: '2026-05-15', description: 'Recorrência Club Black: Roberto Alencar', branchId: 'br_jardins', paymentMethod: 'recurring', referenceId: 'sub_1' },
-  { id: 'tx_4', type: 'income', category: 'subscription', amount: 290.00, date: '2026-05-10', description: 'Recorrência Club Gold: Felipe Diniz', branchId: 'br_jardins', paymentMethod: 'recurring', referenceId: 'sub_2' },
-  { id: 'tx_5', type: 'income', category: 'subscription', amount: 190.00, date: '2026-05-05', description: 'Recorrência Club Bronze: Marcelo Castro', branchId: 'br_leblon', paymentMethod: 'recurring', referenceId: 'sub_3' },
+  { id: 'tx_3', type: 'income', category: 'subscription', amount: 199.90, date: '2026-05-15', description: 'Recorrência Club Black: Roberto Alencar', branchId: 'br_jardins', paymentMethod: 'recurring', referenceId: 'sub_1' },
+  { id: 'tx_4', type: 'income', category: 'subscription', amount: 129.90, date: '2026-05-10', description: 'Recorrência Club Gold: Felipe Diniz', branchId: 'br_jardins', paymentMethod: 'recurring', referenceId: 'sub_2' },
+  { id: 'tx_5', type: 'income', category: 'subscription', amount: 79.90, date: '2026-05-05', description: 'Recorrência Club Bronze: Marcelo Castro', branchId: 'br_leblon', paymentMethod: 'recurring', referenceId: 'sub_3' },
   
   // Income from product sales
   { id: 'tx_6', type: 'income', category: 'product_sale', amount: 89.00, date: '2026-05-26', description: 'Venda de Pomada Modeladora Matte BarberPro', branchId: 'br_jardins', paymentMethod: 'pix' },
@@ -387,9 +387,9 @@ export const INITIAL_AFFILIATES: Affiliate[] = [
 ];
 
 export const INITIAL_AFFILIATE_REFERRALS: AffiliateReferral[] = [
-  { id: 'ref_1', affiliateId: 'aff_pedro', customerName: 'Felipe Diniz', customerPhone: '(11) 98133-4455', serviceOrSubscriptionType: 'subscription', revenue: 290.00, commissionEarned: 58.00, date: '2026-02-10', status: 'settled' },
-  { id: 'ref_2', affiliateId: 'aff_hotel_fasano', customerName: 'Roberto Alencar', customerPhone: '(11) 99122-3344', serviceOrSubscriptionType: 'subscription', revenue: 490.00, commissionEarned: 73.50, date: '2026-01-15', status: 'settled' },
-  { id: 'ref_3', affiliateId: 'aff_pedro', customerName: 'Rodrigo Faro', customerPhone: '(11) 97766-5544', serviceOrSubscriptionType: 'subscription', revenue: 490.00, commissionEarned: 98.00, date: '2026-05-24', status: 'pending' }
+  { id: 'ref_1', affiliateId: 'aff_pedro', customerName: 'Felipe Diniz', customerPhone: '(11) 98133-4455', serviceOrSubscriptionType: 'subscription', revenue: 129.90, commissionEarned: 25.98, date: '2026-02-10', status: 'settled' },
+  { id: 'ref_2', affiliateId: 'aff_hotel_fasano', customerName: 'Roberto Alencar', customerPhone: '(11) 99122-3344', serviceOrSubscriptionType: 'subscription', revenue: 199.90, commissionEarned: 29.99, date: '2026-01-15', status: 'settled' },
+  { id: 'ref_3', affiliateId: 'aff_pedro', customerName: 'Rodrigo Faro', customerPhone: '(11) 97766-5544', serviceOrSubscriptionType: 'subscription', revenue: 199.90, commissionEarned: 39.98, date: '2026-05-24', status: 'pending' }
 ];
 
 export const INITIAL_SETTINGS: GlobalSettings = {
