@@ -12,6 +12,7 @@ import financeiroRouter from './routes/financeiro'
 import barbeariasRouter from './routes/barbearias'
 import geminiRouter from './routes/gemini'
 import publicRouter from './routes/public'
+import whatsappRouter from './routes/whatsapp'
 
 dotenv.config()
 const app = express()
@@ -34,6 +35,7 @@ app.use('/api/financeiro', financeiroRouter)
 app.use('/api/barbearias', barbeariasRouter)
 app.use('/api/gemini', geminiRouter)
 app.use('/api/public', publicRouter)
+app.use('/api/whatsapp', whatsappRouter)
 
 app.use((_req, res) => res.status(404).json({ error: 'Rota nao encontrada' }))
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

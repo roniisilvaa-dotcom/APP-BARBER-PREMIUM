@@ -187,9 +187,13 @@ export class BarberProStore {
       candidates.push(slotTimeStr);
     }
 
-    // Filter past times if selected date is today (statically set current date 2026-05-27 in simulation)
-    const currentSimulatedDate = '2026-05-27';
-    const currentSimulatedTime = '11:29';
+    // Filter past times if selected date is today (uses real current date/time)
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const currentSimulatedDate = `${yyyy}-${mm}-${dd}`;
+    const currentSimulatedTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     const isToday = date === currentSimulatedDate;
 
     // Fetch existing appointments for date, branch, barber that are NOT cancelled

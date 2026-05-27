@@ -807,10 +807,23 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ onNotifyTriggered })
 
                         if (slots.length === 0) {
                           return (
-                            <div className="py-12 text-center flex flex-col items-center gap-2">
-                              <X className="w-8 h-8 text-rose-500 bg-rose-500/10 p-1.5 rounded-full" />
-                              <h4 className="text-xs text-rose-450 font-bold">Sem Horários Livres</h4>
-                              <p className="text-[10px] text-gray-400 px-6 max-w-xs">Todas as poltronas estão preenchidas para este barbeiro de elite nesta data. Por favor, tente outra data ou outro profissional.</p>
+                            <div className="py-10 text-center flex flex-col items-center gap-3">
+                              <div className="w-14 h-14 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
+                                <X className="w-7 h-7 text-rose-400" />
+                              </div>
+                              <div>
+                                <h4 className="text-sm font-bold text-rose-400">Agenda Lotada</h4>
+                                <p className="text-[10px] text-gray-400 mt-1 px-4 max-w-xs leading-relaxed">
+                                  Sem horários disponíveis para este barbeiro nesta data.<br/>
+                                  Escolha outra data ou outro profissional.
+                                </p>
+                              </div>
+                              <button
+                                onClick={() => { setBookingStep(4); setSelectedDate(''); }}
+                                className="text-[11px] text-[#B08D57] border border-[#B08D57]/30 px-4 py-2 rounded-xl hover:bg-[#B08D57]/10 transition-all"
+                              >
+                                ← Voltar ao Calendário
+                              </button>
                             </div>
                           );
                         }
